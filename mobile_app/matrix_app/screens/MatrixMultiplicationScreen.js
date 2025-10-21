@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView, Text, TextInput, Button, ScrollView, StyleSheet } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 import { sendMatrixForComputation } from '../api';
 
 export default function MatrixMultiplicationScreen() {
@@ -7,6 +8,14 @@ export default function MatrixMultiplicationScreen() {
   const [matrixBInput, setMatrixBInput] = useState('5,6\n7,8');
   const [result, setResult] = useState(null);
   const [message, setMessage] = useState('');
+  const [networkState, setNetworkState] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setNetworkState(state);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const parseMatrix = (text) => {
     return text.trim().split('\n').map(row => row.split(',').map(Number));
@@ -44,19 +53,43 @@ export default function MatrixMultiplicationScreen() {
 
       const startTime = Date.now();
 
-      if (orderA < 30 && orderB < 30) {
-        // Local computation
-        const localResult = multiplyMatricesLocally(matrixA, matrixB);
-        const timeTaken = Date.now() - startTime;
-        setMessage(`Computed on mobile device in ${timeTaken} ms`);
-        setResult(localResult);
+      // Check network condition for decision making
+      const isConnected = networkState?.isConnected;
+      const isFastNetwork = isConnected && (
+        networkState.type === 'wifi' ||
+        networkState.details?.cellularGeneration === '4g' ||
+        networkState.details?.cellularGeneration === '5g'
+      );
+
+      let computationLocation = '';
+      let reason = '';
+      let computedResult = null;
+      let timeTaken = 0;
+
+      if (orderA < 25 && orderB < 25) {
+        // Compute locally for small matrix size
+        computedResult = multiplyMatricesLocally(matrixA, matrixB);
+        computationLocation = 'mobile device';
+        reason = 'matrix size is small (< 25)';
+        timeTaken = Date.now() - startTime;
       } else {
-        // Remote computation
-        const res = await sendMatrixForComputation(matrixA, matrixB);
-        const timeTaken = Date.now() - startTime;
-        setMessage(`Computed on backend server in ${timeTaken} ms`);
-        setResult(res);
+        if (isFastNetwork) {
+          // Compute on backend if network is fast
+          computedResult = await sendMatrixForComputation(matrixA, matrixB);
+          computationLocation = 'backend server';
+          reason = 'fast network detected (WiFi or 4G/5G)';
+          timeTaken = Date.now() - startTime;
+        } else {
+          // Compute locally if network is slow or not connected
+          computedResult = multiplyMatricesLocally(matrixA, matrixB);
+          computationLocation = 'mobile device';
+          reason = 'slow or no network detected';
+          timeTaken = Date.now() - startTime;
+        }
       }
+
+      setResult(computedResult);
+      setMessage(`Computed on ${computationLocation} in ${timeTaken} ms because ${reason}.`);
     } catch (error) {
       setMessage('Error computing matrix: ' + error.message);
       setResult(null);
