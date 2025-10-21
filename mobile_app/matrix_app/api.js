@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 //Computer's local IP and Flask port:
-const API_URL = 'http://192.168.1.9:5000';
+const API_URL = 'http://192.168.1.10:5000';
 
 export const sendMatrixForComputation = async (matrixA, matrixB) => {
   try {
