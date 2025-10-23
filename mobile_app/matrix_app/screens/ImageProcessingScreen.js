@@ -79,7 +79,7 @@ export default function ImageProcessingScreen() {
       const start = Date.now();
       let outputImage = null;
 
-      if (fileSizeMB < 2 || (!isConnected || !isFastNetwork)) {
+      if (fileSizeMB < 1 || (!isConnected || !isFastNetwork)) {
         // Local computation for small image or poor network
         outputImage = await convertToGrayscaleLocally(originalImage);
         computationLocation = 'mobile device';
