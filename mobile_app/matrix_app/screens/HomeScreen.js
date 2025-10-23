@@ -10,6 +10,12 @@ export default function HomeScreen({ navigation }) {
         onPress={() => navigation.navigate('MatrixMultiplication')}
         color="#1e90ff"
       />
+      <Button
+        title="Image Processing (Offload Demo)"
+        onPress={() => navigation.navigate('ImageProcessing')}
+        color="#ffa500"
+      />
+
     </View>
   );
 }
