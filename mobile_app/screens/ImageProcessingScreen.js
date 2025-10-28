@@ -12,7 +12,7 @@ export default function ImageProcessingScreen() {
   const [loading, setLoading] = useState(false);
   const [networkState, setNetworkState] = useState(null);
 
-  const BASE_URL = 'http://192.168.1.6:5000'; // Flask backend
+  const BASE_URL = 'http://192.168.1.199:5000'; // Flask backend
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
@@ -96,7 +96,7 @@ export default function ImageProcessingScreen() {
           name: 'upload.jpg',
         });
 
-        const res = await axios.post(`${BASE_URL}/process-image`, formData, {
+        const res = await axios.post(`${BASE_URL}/task/grayscale`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         outputImage = `data:image/jpeg;base64,${res.data.processed_image}`;
