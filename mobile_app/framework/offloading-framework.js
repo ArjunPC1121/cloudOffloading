@@ -1,5 +1,4 @@
-import NetInfo from '@react-native-community/netinfo';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { TASKS } from './constants';
 import { localTaskExecutor } from './local-tasks';
 import { remoteTaskExecutor } from './remote-tasks';

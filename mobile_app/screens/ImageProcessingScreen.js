@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Button, Image, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import NetInfo from '@react-native-community/netinfo';
-import * as FileSystem from 'expo-file-system/legacy';
-import { API_BASE_URL } from '../config';
-import axios from 'axios';
+import { framework } from "../framework/offloading-framework"
+import { TASKS } from '../framework/constants';
 
 export default function ImageProcessingScreen() {
     const [originalImage, setOriginalImage] = useState(null);
@@ -12,8 +11,6 @@ export default function ImageProcessingScreen() {
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const [networkState, setNetworkState] = useState(null);
-
-
     useEffect(() => {
         const unsubscribe = NetInfo.addEventListener(state => {
             setNetworkState(state);
@@ -34,26 +31,6 @@ export default function ImageProcessingScreen() {
         }
     };
 
-    // Local grayscale conversion (Adding a tint)
-    const convertToGrayscaleLocally = async (uri) => {
-        await new Promise(resolve => setTimeout(resolve, 800)); // simulate processing time
-
-
-        return (
-            <View style={styles.grayWrapper}>
-                <Image
-                    source={{ uri }}
-                    style={[
-                        styles.image,
-                        { opacity: 0.6 }, // slightly fade the colors for effect
-                    ]}
-                />
-                <View style={styles.overlay} />
-            </View>
-        );
-    };
-
-
     const handleProcess = async () => {
         if (!originalImage) {
             setMessage('Please select an image first.');
@@ -64,53 +41,16 @@ export default function ImageProcessingScreen() {
         setMessage('');
 
         try {
-            const fileInfo = await FileSystem.getInfoAsync(originalImage, { size: true });
-            const fileSizeMB = fileInfo.size / (1024 * 1024);
+            // 1. Call the framework
+            const response = await framework.execute(TASKS.GRAYSCALE, {
+                originalImage: originalImage,
+                networkState: networkState,
+            });
 
-            const isConnected = networkState?.isConnected;
-            const isFastNetwork = isConnected && (
-                networkState.type === 'wifi' ||
-                networkState.details?.cellularGeneration === '4g' ||
-                networkState.details?.cellularGeneration === '5g'
-            );
-
-            let computationLocation = '';
-            let reason = '';
-            const start = Date.now();
-            let outputImage = null;
-
-            if (fileSizeMB < 1 || (!isConnected || !isFastNetwork)) {
-                // Local computation for small image or poor network
-                outputImage = await convertToGrayscaleLocally(originalImage);
-                computationLocation = 'mobile device';
-                reason = `small image (${fileSizeMB.toFixed(2)} MB) or slow/no network`;
-            } else {
-                // Offload to backend
-                const response = await fetch(originalImage);
-                const blob = await response.blob();
-
-                const formData = new FormData();
-                formData.append('image', {
-                    uri: originalImage,
-                    type: blob.type,
-                    name: 'upload.jpg',
-                });
-
-                const res = await axios.post(`${API_BASE_URL}/task/grayscale`, formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                });
-                outputImage = `data:image/jpeg;base64,${res.data.processed_image}`;
-
-                computationLocation = 'backend server';
-                reason = isFastNetwork
-                    ? 'fast network detected (WiFi or 4G/5G)'
-                    : `large image (${fileSizeMB.toFixed(2)} MB) prioritized for backend`;
-            }
-
-            const end = Date.now();
-            setProcessedImage(outputImage);
+            // 2. Set results from the framework's response, the framework returns URI (data)
+            setProcessedImage(response.data.imageUri);
             setMessage(
-                `Computed on ${computationLocation} in ${end - start} ms because ${reason}.`
+                `Computed on ${response.ranOn} in ${response.timeMs} ms. Reason: ${response.reason}`
             );
         } catch (error) {
             setMessage('Error processing image: ' + error.message);
@@ -128,11 +68,9 @@ export default function ImageProcessingScreen() {
                 <Image source={{ uri: originalImage }} style={styles.image} />
             )}
 
-            {typeof processedImage === 'string' && (
+            {processedImage && (
                 <Image source={{ uri: processedImage }} style={styles.image} />
             )}
-
-            {React.isValidElement(processedImage) && processedImage}
 
             <Button
                 title="Process Image"
@@ -176,18 +114,5 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 10,
         fontSize: 16,
-    },
-    grayWrapper: {
-        position: 'relative',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    overlay: {
-        position: 'absolute',
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'gray',
-        opacity: 0.4, // overlay on top to dull colors visually
-        borderRadius: 8,
     },
 });

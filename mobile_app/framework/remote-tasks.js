@@ -17,7 +17,8 @@ export const runGrayscaleOnServer = async (params) => {
     const res = await axios.post(`${API_BASE_URL}/task/${TASKS.GRAYSCALE}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
-    outputImage = `data:image/jpeg;base64,${res.data.processed_image}`;
+    const outputImage = `data:image/jpeg;base64,${res.data.processed_image}`;
+    return { imageUri: outputImage };
 }
 
 export const runMatrixOnServer = async (params) => {
