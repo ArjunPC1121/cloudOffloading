@@ -1,10 +1,56 @@
 import { TASKS } from './constants';
+import { Image as CanvasImage } from 'react-native-canvas';
 const runGrayscaleLocally = (params) => {
-    return new Promise(resolve => {
-        setTimeout(() => {
-            // Just return the original image URI as the "result", after delay
-            resolve({ imageUri: params.originalImage });
-        }, 800);
+    return new Promise((resolve, reject) => {
+        try {
+            // 1. Get the *ready canvas* and asset from params
+            const { originalImage, canvas } = params;
+
+            // 2. Check if the canvas was passed
+            if (!canvas) {
+                return reject(new Error('Canvas object was not provided.'));
+            }
+
+            const ctx = canvas.getContext('2d');
+            const image = new CanvasImage(canvas); // Pass the canvas to the image
+
+            // 3. Set dimensions (this will work now)
+            canvas.width = originalImage.width;
+            canvas.height = originalImage.height;
+
+            // 4. Set onload handler
+            image.onload = () => {
+                ctx.drawImage(image, 0, 0, originalImage.width, originalImage.height);
+
+                const imageData = ctx.getImageData(0, 0, originalImage.width, originalImage.height);
+                const data = imageData.data;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+                    const avg = 0.299 * r + 0.587 * g + 0.114 * b;
+                    data[i] = avg;
+                    data[i + 1] = avg;
+                    data[i + 2] = avg;
+                }
+
+                ctx.putImageData(imageData, 0, 0);
+
+                const newImageBase64 = canvas.toDataURL('image/jpeg');
+                resolve({ imageUri: newImageBase64 });
+            };
+
+            image.onerror = (err) => {
+                reject(new Error('Canvas image failed to load: ' + err));
+            };
+
+            // 5. Load the image
+            image.src = originalImage.uri;
+
+        } catch (err) {
+            reject(err);
+        }
     });
 };
 

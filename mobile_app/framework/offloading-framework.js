@@ -17,7 +17,7 @@ class OffloadingFramework {
 
             case TASKS.GRAYSCALE: {
                 const { originalImage } = params;
-                const fileInfo = await FileSystem.getInfoAsync(originalImage, { size: true });
+                const fileInfo = await FileSystem.getInfoAsync(originalImage.uri, { size: true });
                 const fileSizeMB = fileInfo.size / (1024 * 1024);
 
                 if (fileSizeMB < 1) {

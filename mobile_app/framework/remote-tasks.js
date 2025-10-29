@@ -4,7 +4,7 @@ import { TASKS } from './constants';
 
 export const runGrayscaleOnServer = async (params) => {
     const { originalImage } = params
-    const response = await fetch(originalImage);
+    const response = await fetch(originalImage.uri);
     const blob = await response.blob();
 
     const formData = new FormData();
