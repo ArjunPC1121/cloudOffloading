@@ -32,7 +32,7 @@ const runMatrixLocally = (params) => {
         }
     }
 
-    return Promise.resolve({ result: product });
+    return Promise.resolve(product);
 };
 
 

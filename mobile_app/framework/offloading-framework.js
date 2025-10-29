@@ -6,7 +6,7 @@ import { remoteTaskExecutor } from './remote-tasks';
 
 class OffloadingFramework {
     async shouldOffload(taskName, params) {
-        const networkState = await NetInfo.fetch();
+        const { networkState } = params;
 
         // 1. Global rule: No connection? No offload.
         if (!networkState.isConnected || networkState.type === 'unknown') {
