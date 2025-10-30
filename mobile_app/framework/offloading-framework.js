@@ -15,7 +15,7 @@ class OffloadingFramework {
         // 2. Task-Specific Rules
         switch (taskName) {
 
-            case TASKS.GRAYSCALE: {
+            case TASKS.MANIPULATE: {
                 const { originalImage } = params;
                 const fileInfo = await FileSystem.getInfoAsync(originalImage, { size: true });
                 const fileSizeMB = fileInfo.size / (1024 * 1024);
@@ -60,6 +60,11 @@ class OffloadingFramework {
                     return { offload: false, reason: `Slow network (${networkState.type})` };
                 }
             }
+
+            case TASKS.GRAYSCALE: {
+                return {offload: true, reason: 'Always offload grayscale task.'};
+            }
+            
             default:
                 return { offload: false, reason: 'Unknown task.' };
         }

@@ -5,7 +5,7 @@ import NetInfo from '@react-native-community/netinfo';
 import { framework } from "../framework/offloading-framework"
 import { TASKS } from '../framework/constants';
 
-export default function ImageProcessingScreen() {
+export default function ImageManipulationScreen() {
     const [originalImage, setOriginalImage] = useState(null);
     const [processedImage, setProcessedImage] = useState(null);
     const [message, setMessage] = useState('');
@@ -42,7 +42,7 @@ export default function ImageProcessingScreen() {
 
         try {
             // 1. Call the framework
-            const response = await framework.execute(TASKS.GRAYSCALE, {
+            const response = await framework.execute(TASKS.MANIPULATE, {
                 originalImage: originalImage,
                 networkState: networkState,
             });
@@ -61,7 +61,7 @@ export default function ImageProcessingScreen() {
 
     return (
         <ScrollView style={styles.container}>
-            <Text style={styles.title}>Image Processing (Cloud Offloading)</Text>
+            <Text style={styles.title}>Image Manipulation</Text>
 
             <Button title="Pick an Image" onPress={pickImage} color="#1e90ff" />
             {originalImage && !processedImage && (

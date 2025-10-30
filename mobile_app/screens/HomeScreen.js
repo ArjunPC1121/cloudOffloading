@@ -11,9 +11,14 @@ export default function HomeScreen({ navigation }) {
         color="#1e90ff"
       />
       <Button
-        title="Image Processing (Offload Demo)"
-        onPress={() => navigation.navigate('ImageProcessing')}
+        title="Image flipping and rotation"
+        onPress={() => navigation.navigate('ImageManipulation')}
         color="#ffa500"
+      />
+      <Button
+        title="Grayscale Image Processing"
+        onPress={() => navigation.navigate('Grayscale')}
+        color="#FF0000"
       />
 
     </View>

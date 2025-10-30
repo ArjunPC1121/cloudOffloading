@@ -8,12 +8,12 @@ import { TASKS } from './constants';
  * @param {string} params.originalImage The URI of the image to process.
  * @returns {Promise<{imageUri: string}>} A promise that resolves with the URI of the processed image.
  */
-const runGrayscaleLocally = async (params) => {
+const runManipulateLocally = async (params) => {
     console.log('Running extended image manipulation locally for longer delay...');
     
     const { originalImage } = params;
 
-    // 🌟 Added more actions and reduced compression for a longer task 🌟
+    //Added more actions and reduced compression for a longer task
     const actions = [
         { rotate: 90 },
         { flip: ImageManipulator.FlipType.Vertical }, // New step: Flip vertically
@@ -69,6 +69,6 @@ const runMatrixLocally = (params) => {
 
 
 export const localTaskExecutor = {
-    [TASKS.GRAYSCALE]: runGrayscaleLocally,
+    [TASKS.MANIPULATE]: runManipulateLocally,
     [TASKS.MATRIX_MULTIPLY]: runMatrixLocally,
 };

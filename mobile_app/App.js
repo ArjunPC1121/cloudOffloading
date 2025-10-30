@@ -3,8 +3,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './screens/HomeScreen';
 import MatrixMultiplicationScreen from './screens/MatrixMultiplicationScreen';
-import ImageProcessingScreen from './screens/ImageProcessingScreen';
-
+import ImageManipulationScreen from './screens/ImageManipulationScreen';
+import GrayscaleScreen from './screens/GrayscaleScreen';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -21,9 +21,14 @@ export default function App() {
         <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Mobile Cloud Offloading' }} />
         <Stack.Screen name="MatrixMultiplication" component={MatrixMultiplicationScreen} options={{ title: 'Matrix Multiplication' }} />
         <Stack.Screen
-          name="ImageProcessing"
-          component={ImageProcessingScreen}
-          options={{ title: 'Image Processing' }}
+          name="ImageManipulation"
+          component={ImageManipulationScreen}
+          options={{ title: 'Image Manipulation' }}
+        />
+        <Stack.Screen
+          name="Grayscale"
+          component={GrayscaleScreen}
+          options={{ title: 'Grayscale conversion' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

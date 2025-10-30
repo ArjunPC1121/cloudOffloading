@@ -1,4 +1,5 @@
 export const TASKS = {
     GRAYSCALE: 'grayscale',
-    MATRIX_MULTIPLY: 'matrix-multiply'
+    MATRIX_MULTIPLY: 'matrix-multiply',
+    MANIPULATE: 'manipulate'
 }
