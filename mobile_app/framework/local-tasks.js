@@ -71,4 +71,5 @@ const runMatrixLocally = (params) => {
 export const localTaskExecutor = {
     [TASKS.MANIPULATE]: runManipulateLocally,
     [TASKS.MATRIX_MULTIPLY]: runMatrixLocally,
+    [TASKS.FLIP_LOCAL]: runManipulateLocally,
 };

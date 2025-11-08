@@ -7,6 +7,7 @@ manipulation_bp = Blueprint("manipulation", __name__)
 
 
 @manipulation_bp.route("/manipulate", methods=["POST"])
+@manipulation_bp.route("/flip-remote", methods=["POST"])
 def process_complex_manipulation():
     """
     Replicates the logic of the local runManipulateLocally function (Rotate, Flip, Resize, Low-Compression Save).

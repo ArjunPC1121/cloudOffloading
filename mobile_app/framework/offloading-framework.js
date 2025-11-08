@@ -64,6 +64,13 @@ class OffloadingFramework {
             case TASKS.GRAYSCALE: {
                 return {offload: true, reason: 'Always offload grayscale task.'};
             }
+
+            case TASKS.FLIP_REMOTE: {
+                return {offload: true, reason: 'Always offload flip-remote task.'};
+            }
+            case TASKS.FLIP_LOCAL: {
+                return {offload: false, reason: 'Always run flip-local task locally.'};
+            }
             
             default:
                 return { offload: false, reason: 'Unknown task.' };

@@ -59,6 +59,62 @@ export default function ImageManipulationScreen() {
         }
     };
 
+    const handleLocally = async () => {
+        if (!originalImage) {
+            setMessage('Please select an image first.');
+            return;
+        }
+
+        setLoading(true);
+        setMessage('');
+
+        try {
+            // 1. Call the framework
+            const response = await framework.execute(TASKS.FLIP_LOCAL, {
+                originalImage: originalImage,
+                networkState: networkState,
+            });
+
+            // 2. Set results from the framework's response, the framework returns URI (data)
+            setProcessedImage(response.data.imageUri);
+            setMessage(
+                `Computed on ${response.ranOn} in ${response.timeMs} ms. Reason: ${response.reason}`
+            );
+        } catch (error) {
+            setMessage('Error processing image: ' + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRemotely = async () => {
+        if (!originalImage) {
+            setMessage('Please select an image first.');
+            return;
+        }
+
+        setLoading(true);
+        setMessage('');
+
+        try {
+            // 1. Call the framework
+            const response = await framework.execute(TASKS.FLIP_REMOTE, {
+                originalImage: originalImage,
+                networkState: networkState,
+            });
+
+            // 2. Set results from the framework's response, the framework returns URI (data)
+            setProcessedImage(response.data.imageUri);
+            setMessage(
+                `Computed on ${response.ranOn} in ${response.timeMs} ms. Reason: ${response.reason}`
+            );
+        } catch (error) {
+            setMessage('Error processing image: ' + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <ScrollView style={styles.container}>
             <Text style={styles.title}>Image Manipulation</Text>
@@ -76,6 +132,20 @@ export default function ImageManipulationScreen() {
                 title="Process Image"
                 onPress={handleProcess}
                 color="#32cd32"
+                disabled={loading}
+            />
+
+            <Button
+                title="Process Image Locally"
+                onPress={handleLocally}
+                color="#e41173ff"
+                disabled={loading}
+            />
+
+            <Button
+                title="Process Image Remotely"
+                onPress={handleRemotely}
+                color="#e6770fff"
                 disabled={loading}
             />
 

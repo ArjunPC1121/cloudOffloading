@@ -57,4 +57,5 @@ export const remoteTaskExecutor = {
     [TASKS.GRAYSCALE]: runGrayscaleOnServer,
     [TASKS.MATRIX_MULTIPLY]: runMatrixOnServer,
     [TASKS.MANIPULATE]: runManipulateOnServer,
+    [TASKS.FLIP_REMOTE]: runManipulateOnServer,
 };
