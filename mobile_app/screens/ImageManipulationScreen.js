@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Button, Image, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import NetInfo from '@react-native-community/netinfo';
+import { useBatteryLevel } from 'expo-battery';
 import { framework } from "../framework/offloading-framework"
 import { TASKS } from '../framework/constants';
 
@@ -11,6 +12,10 @@ export default function ImageManipulationScreen() {
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const [networkState, setNetworkState] = useState(null);
+    
+    //NEW HOOK: Get battery level (0 to 1)
+    const batteryLevel = useBatteryLevel(); 
+
     useEffect(() => {
         const unsubscribe = NetInfo.addEventListener(state => {
             setNetworkState(state);
@@ -31,6 +36,13 @@ export default function ImageManipulationScreen() {
         }
     };
 
+    // Helper to get the battery percentage (0 to 100)
+    const getBatteryPercentage = () => {
+        return batteryLevel !== null && batteryLevel !== -1
+            ? Math.round(batteryLevel * 100)
+            : 'Unknown';
+    };
+
     const handleProcess = async () => {
         if (!originalImage) {
             setMessage('Please select an image first.');
@@ -45,6 +57,7 @@ export default function ImageManipulationScreen() {
             const response = await framework.execute(TASKS.MANIPULATE, {
                 originalImage: originalImage,
                 networkState: networkState,
+                batteryPercentage: getBatteryPercentage(), 
             });
 
             // 2. Set results from the framework's response, the framework returns URI (data)
@@ -73,6 +86,7 @@ export default function ImageManipulationScreen() {
             const response = await framework.execute(TASKS.FLIP_LOCAL, {
                 originalImage: originalImage,
                 networkState: networkState,
+                batteryPercentage: getBatteryPercentage(), 
             });
 
             // 2. Set results from the framework's response, the framework returns URI (data)
@@ -101,6 +115,7 @@ export default function ImageManipulationScreen() {
             const response = await framework.execute(TASKS.FLIP_REMOTE, {
                 originalImage: originalImage,
                 networkState: networkState,
+                batteryPercentage: getBatteryPercentage(), 
             });
 
             // 2. Set results from the framework's response, the framework returns URI (data)
@@ -118,6 +133,11 @@ export default function ImageManipulationScreen() {
     return (
         <ScrollView style={styles.container}>
             <Text style={styles.title}>Image Manipulation</Text>
+
+            {/* Display current battery level */}
+            <Text style={styles.batteryInfo}>
+                Battery: **{getBatteryPercentage()}%** 🔋
+            </Text>
 
             <Button title="Pick an Image" onPress={pickImage} color="#1e90ff" />
             {originalImage && !processedImage && (
@@ -184,5 +204,11 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 10,
         fontSize: 16,
+    },
+    batteryInfo: {
+        color: 'yellow',
+        textAlign: 'center',
+        marginBottom: 10,
+        fontSize: 18,
     },
 });
