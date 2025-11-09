@@ -1,5 +1,5 @@
 import * as ImageManipulator from 'expo-image-manipulator';
-import { TASKS } from './constants'; 
+import { TASKS } from './constants';
 
 /**
  * Performs multiple local image manipulations (Rotate, Flip, Resize, and low compression)
@@ -10,14 +10,14 @@ import { TASKS } from './constants';
  */
 const runManipulateLocally = async (params) => {
     console.log('Running extended image manipulation locally for longer delay...');
-    
+
     const { originalImage } = params;
 
     //Added more actions and reduced compression for a longer task
     const actions = [
         { rotate: 90 },
         { flip: ImageManipulator.FlipType.Vertical }, // New step: Flip vertically
-        { resize: { width: 600 } }, 
+        { resize: { width: 600 } },
     ];
 
     const saveOptions = {
@@ -64,7 +64,10 @@ const runMatrixLocally = (params) => {
         }
     }
 
-    return Promise.resolve(product);
+    // Return the full object instead of just the result
+    const result = { result: product };
+
+    return Promise.resolve(result);
 };
 
 

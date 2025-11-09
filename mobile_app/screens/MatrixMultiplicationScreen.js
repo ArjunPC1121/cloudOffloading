@@ -42,7 +42,7 @@ export default function MatrixMultiplicationScreen() {
                 b: matrixB,
                 networkState: networkState,
             });
-            setResult(response.data);
+            setResult(response.data.result);
             setMessage(
                 `Computed on ${response.ranOn} in ${response.timeMs} ms. Reason: ${response.reason}`
             );

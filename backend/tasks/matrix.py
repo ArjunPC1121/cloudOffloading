@@ -1,6 +1,8 @@
 # Blueprint to expose matrix multiplication as an HTTP endpoint
 from flask import Blueprint, request, jsonify
 import numpy as np
+import time
+import psutil
 
 matrix_bp = Blueprint("matrix", __name__)
 
@@ -15,8 +17,25 @@ def matrix_multiply_route():
         return jsonify({"error": "Both matrixA and matrixB are required"}), 400
 
     try:
+        # Get load *before* the computation
+        cpu_load = psutil.cpu_percent()
+        mem_percent = psutil.virtual_memory().percent
+        start_time = time.perf_counter_ns()  # Use high-precision timer
+
         result = multiply_matrices(a, b)
-        return jsonify({"result": result.tolist()})  # Convert numpy array back to list
+
+        end_time = time.perf_counter_ns()
+        compute_time_ms = (end_time - start_time) / 1_000_000
+
+        return jsonify(
+            {
+                "result": result.tolist(),
+                "server_cpu_load": cpu_load,
+                "server_memory_percent": mem_percent,
+                "server_compute_time_ms": round(compute_time_ms, 5),
+            }
+        )
+
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:

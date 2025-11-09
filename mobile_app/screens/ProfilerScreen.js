@@ -6,10 +6,11 @@ import { TASKS } from '../framework/constants';
 import { localTaskExecutor } from '../framework/local-tasks';
 import { remoteTaskExecutor } from '../framework/remote-tasks';
 import { API_BASE_URL } from '../config';
+import * as Device from 'expo-device';
 
 // --- 1. DEFINE YOUR TEST PLAN ---
-const BENCHMARK_SIZES = [10, 50, 100, 150, 200, 250, 300]; // Test these N x N sizes
-const ITERATIONS_PER_SIZE = 3; // Run each size 5 times
+const BENCHMARK_SIZES = [10, 25, 50, 100, 150, 200, 250, 300]; // Test these N x N sizes
+const ITERATIONS_PER_SIZE = 3;
 
 // (Your generateMatrix helper function)
 const generateMatrix = (size) => {
@@ -68,11 +69,19 @@ export default function ProfilerScreen() {
                         latency_ms: latency,
                         matrix_size: size,
                         image_size_kb: 0,
+
+                        // Device specific parameters
+                        device_manufacturer: Device.manufacturer,
+                        device_model_name: Device.modelName,
+                        os_name: Device.osName,
+                        os_version: Device.osVersion,
+                        total_memory: Device.totalMemory,
                     };
 
                     // 2. --- RUN TASKS ---
                     let t_local_ms = -1;
                     let t_remote_ms = -1;
+                    let server_stats = {};
 
                     // Local
                     const t0 = Date.now();
@@ -81,15 +90,22 @@ export default function ProfilerScreen() {
 
                     // Remote
                     const t1 = Date.now();
-                    await remoteTaskExecutor[TASKS.MATRIX_MULTIPLY](taskParams);
+                    const response = await remoteTaskExecutor[TASKS.MATRIX_MULTIPLY](taskParams);
                     t_remote_ms = Date.now() - t1;
 
-                    setLog(prev => prev + `-> Local: ${t_local_ms}ms, Remote: ${t_remote_ms}ms\n`);
+                    server_stats = {
+                        server_cpu_load: response.server_cpu_load,
+                        server_memory_percent: response.server_memory_percent,
+                        server_compute_time_ms: response.server_compute_time_ms
+                    };
+
+                    setLog(prev => prev + `-> Local: ${t_local_ms}ms, Remote: ${t_remote_ms}ms, Server:${server_stats.server_compute_time_ms}ms\n`);
 
                     // 3. --- LOG THE DATA ---
                     const outputs = {
                         local_time_ms: t_local_ms,
                         remote_time_ms: t_remote_ms,
+                        ...server_stats
                     };
 
                     await fetch(`${API_BASE_URL}/benchmark/log`, {

@@ -16,6 +16,14 @@ CSV_HEADER = [
     "image_size_kb",
     "local_time_ms",
     "remote_time_ms",
+    "device_manufacturer",
+    "device_model_name",
+    "os_name",
+    "os_version",
+    "total_memory",
+    "server_cpu_load",
+    "server_memory_percent",
+    "server_compute_time_ms",
 ]
 
 benchmark_bp = flask.Blueprint("log_benchmark", __name__, url_prefix="/benchmark")
@@ -41,6 +49,15 @@ def log_benchmark():
             "image_size_kb": inputs.get("image_size_kb", 0),
             "local_time_ms": outputs.get("local_time_ms"),
             "remote_time_ms": outputs.get("remote_time_ms"),
+            "device_manufacturer": inputs.get("device_manufacturer"),
+            "device_model_name": inputs.get("device_model_name"),
+            "os_name": inputs.get("os_name"),
+            "os_version": inputs.get("os_version"),
+
+            # We'll modify the task endpoint to send this
+            "server_cpu_load": outputs.get("server_cpu_load"),
+            "server_memory_percent": outputs.get("server_memory_percent"),
+            "server_compute_time_ms": outputs.get("server_compute_time_ms"),
         }
 
         # Check if file exists to see if we need to write the header
