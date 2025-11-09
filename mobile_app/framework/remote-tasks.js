@@ -46,7 +46,6 @@ export const runMatrixOnServer = async (params) => {
     const matrixB = b;
     try {
         const response = await axios.post(`${API_BASE_URL}/task/${TASKS.MATRIX_MULTIPLY}`, { matrixA, matrixB });
-        console.log('API Response:', response.data);
         return response.data.result;
     } catch (error) {
         console.error('API Error:', error);

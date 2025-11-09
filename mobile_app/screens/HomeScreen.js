@@ -20,6 +20,11 @@ export default function HomeScreen({ navigation }) {
         onPress={() => navigation.navigate('Grayscale')}
         color="#FF0000"
       />
+      <Button
+        title="Profiler"
+        onPress={() => navigation.navigate('Profiler')}
+        color="#FF00FF"
+      />
 
     </View>
   );
