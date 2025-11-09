@@ -16,6 +16,8 @@ CSV_HEADER = [
     "latency_ms",
     "matrix_size",
     "image_size_kb",
+    "image_resolution",
+    "image_complexity",
     "local_time_ms",
     "remote_time_ms",
     "device_manufacturer",
@@ -54,6 +56,9 @@ def log_benchmark():
             "is_charging": inputs.get("is_charging"),
             "latency_ms": round(inputs.get("latency_ms"), 3),
             "matrix_size": inputs.get("matrix_size", 0),
+            "image_size_kb": inputs.get("image_size_kb"),
+            "image_resolution": inputs.get("image_resolution"),
+            "image_complexity": inputs.get("image_complexity"),
             "image_size_kb": inputs.get("image_size_kb", 0),
             "local_time_ms": outputs.get("local_time_ms"),
             "remote_time_ms": outputs.get("remote_time_ms"),
@@ -151,3 +156,25 @@ def show_data():
     html += "</table></body></html>"
 
     return html
+
+
+@benchmark_bp.route("/csv", methods=["GET"])
+def get_csv():
+    """Returns the CSV file for download."""
+
+    # Check if the file exists
+    if not os.path.exists(DATA_FILE):
+        return jsonify(success=False, message="Benchmark data file not found."), 404
+
+    try:
+        with open(DATA_FILE, "r", newline="") as f:
+            csv_content = f.read()
+
+        response = flask.Response(
+            csv_content,
+            mimetype="text/plain",
+        )
+        return response
+
+    except Exception as e:
+        return jsonify(success=False, message=f"Error reading CSV file: {e}"), 500

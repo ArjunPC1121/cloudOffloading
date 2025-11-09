@@ -37,7 +37,7 @@ export const runManipulateOnServer = async (params) => {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
     const outputImage = `data:image/jpeg;base64,${res.data.processed_image}`;
-    return { imageUri: outputImage };
+    return { imageUri: outputImage, ...res.data };
 }
 
 export const runMatrixOnServer = async (params) => {

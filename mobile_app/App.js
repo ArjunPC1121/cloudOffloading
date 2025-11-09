@@ -6,6 +6,7 @@ import MatrixMultiplicationScreen from './screens/MatrixMultiplicationScreen';
 import ImageManipulationScreen from './screens/ImageManipulationScreen';
 import GrayscaleScreen from './screens/GrayscaleScreen';
 import ProfilerScreen from './screens/ProfilerScreen';
+import ImageProfilerScreen from './screens/ProfilerImage';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -30,6 +31,11 @@ export default function App() {
                     name="Profiler"
                     component={ProfilerScreen}
                     options={{ title: 'Profiler Screen' }}
+                />
+                <Stack.Screen
+                    name="ProfilerImage"
+                    component={ImageProfilerScreen}
+                    options={{ title: 'Image Profiler Screen' }}
                 />
                 <Stack.Screen
                     name="Grayscale"
