@@ -9,8 +9,8 @@ import { API_BASE_URL } from '../config';
 import * as Device from 'expo-device';
 
 // --- 1. DEFINE YOUR TEST PLAN ---
-const BENCHMARK_SIZES = [1, 2, 3];//[10, 25, 50, 100, 150, 200, 250, 300]; // Test these N x N sizes
-const ITERATIONS_PER_SIZE = 1;
+const BENCHMARK_SIZES = [10, 25, 50, 100, 150, 200, 250, 300]; // Test these N x N sizes
+const ITERATIONS_PER_SIZE = 3;
 
 // (Your generateMatrix helper function)
 const generateMatrix = (size) => {
@@ -110,6 +110,9 @@ export default function ProfilerScreen() {
                         server_memory_percent: response.server_memory_percent,
                         server_compute_time_ms: response.server_compute_time_ms,
                         server_core_count: response.server_core_count,
+                        server_cpu_model: response.server_cpu_model,
+                        server_cpu_freq_current: response.server_cpu_freq_current,
+                        server_cpu_freq_max: response.server_cpu_freq_max
                     };
 
                     setLog(prev => prev + `-> Local: ${t_local_ms}ms, Remote: ${t_remote_ms}ms, Server:${server_stats.server_compute_time_ms}ms\n`);

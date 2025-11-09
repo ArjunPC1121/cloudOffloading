@@ -2,9 +2,15 @@
 from flask import Blueprint, request, jsonify
 import numpy as np
 import time
+import cpuinfo
 import psutil
 
 matrix_bp = Blueprint("matrix", __name__)
+
+try:
+    SERVER_CPU_MODEL = cpuinfo.get_cpu_info()["brand_raw"]
+except:
+    SERVER_CPU_MODEL = "unknown"  # Fallback
 
 
 @matrix_bp.route("/matrix-multiply", methods=["POST"])
@@ -27,6 +33,8 @@ def matrix_multiply_route():
         # 4. GET CPU CORE COUNT (logical=True includes hyper-threading)
         core_count = psutil.cpu_count(logical=True)
 
+        cpu_freq = psutil.cpu_freq()
+
         result = multiply_matrices(a, b)
 
         end_time = time.perf_counter_ns()
@@ -39,6 +47,9 @@ def matrix_multiply_route():
                 "server_memory_percent": mem_percent,
                 "server_compute_time_ms": round(compute_time_ms, 5),
                 "server_core_count": core_count,
+                "server_cpu_model": SERVER_CPU_MODEL,
+                "server_cpu_freq_current": round(cpu_freq.current, 5),
+                "server_cpu_freq_max": round(cpu_freq.max, 5),
             }
         )
 

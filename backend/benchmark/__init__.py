@@ -27,6 +27,9 @@ CSV_HEADER = [
     "server_memory_percent",
     "server_compute_time_ms",
     "server_core_count",
+    "server_cpu_model",
+    "server_cpu_freq_current",
+    "server_cpu_freq_max",
 ]
 
 benchmark_bp = flask.Blueprint("log_benchmark", __name__, url_prefix="/benchmark")
@@ -63,6 +66,9 @@ def log_benchmark():
             "server_memory_percent": outputs.get("server_memory_percent"),
             "server_compute_time_ms": outputs.get("server_compute_time_ms"),
             "server_core_count": outputs.get("server_core_count"),
+            "server_cpu_model": outputs.get("server_cpu_model"),
+            "server_cpu_freq_current": outputs.get("server_cpu_freq_current"),
+            "server_cpu_freq_max": outputs.get("server_cpu_freq_max"),
         }
 
         # Check if file exists to see if we need to write the header
