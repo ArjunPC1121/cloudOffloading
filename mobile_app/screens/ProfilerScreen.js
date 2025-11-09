@@ -9,8 +9,8 @@ import { API_BASE_URL } from '../config';
 import * as Device from 'expo-device';
 
 // --- 1. DEFINE YOUR TEST PLAN ---
-const BENCHMARK_SIZES = [10, 25, 50, 100, 150, 200, 250, 300]; // Test these N x N sizes
-const ITERATIONS_PER_SIZE = 3;
+const BENCHMARK_SIZES = [1, 2, 3];//[10, 25, 50, 100, 150, 200, 250, 300]; // Test these N x N sizes
+const ITERATIONS_PER_SIZE = 1;
 
 // (Your generateMatrix helper function)
 const generateMatrix = (size) => {
@@ -57,6 +57,15 @@ export default function ProfilerScreen() {
                     const isCharging = (await Battery.getBatteryStateAsync()) === Battery.BatteryState.CHARGING;
                     const latency = await getLatency();
 
+                    const wifi_strength = network.type === 'wifi' && network.details?.strength
+                        ? network.details.strength
+                        : null;
+
+                    // Get frequency (2.4/5Ghz) if wifi, otherwise null
+                    const wifi_frequency = network.type === 'wifi' && network.details?.frequency
+                        ? network.details.frequency
+                        : null;
+
                     const testMatrixA = generateMatrix(size);
                     const testMatrixB = generateMatrix(size);
                     const taskParams = { a: testMatrixA, b: testMatrixB };
@@ -76,6 +85,9 @@ export default function ProfilerScreen() {
                         os_name: Device.osName,
                         os_version: Device.osVersion,
                         total_memory: Device.totalMemory,
+
+                        wifi_strength: wifi_strength,
+                        wifi_frequency: wifi_frequency,
                     };
 
                     // 2. --- RUN TASKS ---
@@ -96,7 +108,8 @@ export default function ProfilerScreen() {
                     server_stats = {
                         server_cpu_load: response.server_cpu_load,
                         server_memory_percent: response.server_memory_percent,
-                        server_compute_time_ms: response.server_compute_time_ms
+                        server_compute_time_ms: response.server_compute_time_ms,
+                        server_core_count: response.server_core_count,
                     };
 
                     setLog(prev => prev + `-> Local: ${t_local_ms}ms, Remote: ${t_remote_ms}ms, Server:${server_stats.server_compute_time_ms}ms\n`);

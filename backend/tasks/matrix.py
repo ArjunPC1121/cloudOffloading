@@ -18,9 +18,14 @@ def matrix_multiply_route():
 
     try:
         # Get load *before* the computation
+        # psutil.cpu_percent() will give you the average CPU load
+        # since the last time it was called (or since the app started)
         cpu_load = psutil.cpu_percent()
         mem_percent = psutil.virtual_memory().percent
         start_time = time.perf_counter_ns()  # Use high-precision timer
+
+        # 4. GET CPU CORE COUNT (logical=True includes hyper-threading)
+        core_count = psutil.cpu_count(logical=True)
 
         result = multiply_matrices(a, b)
 
@@ -33,6 +38,7 @@ def matrix_multiply_route():
                 "server_cpu_load": cpu_load,
                 "server_memory_percent": mem_percent,
                 "server_compute_time_ms": round(compute_time_ms, 5),
+                "server_core_count": core_count,
             }
         )
 

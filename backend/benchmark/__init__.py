@@ -9,6 +9,8 @@ CSV_HEADER = [
     "log_timestamp",
     "task_name",
     "network_type",
+    "wifi_strength",
+    "wifi_frequency",
     "battery_level",
     "is_charging",
     "latency_ms",
@@ -24,6 +26,7 @@ CSV_HEADER = [
     "server_cpu_load",
     "server_memory_percent",
     "server_compute_time_ms",
+    "server_core_count",
 ]
 
 benchmark_bp = flask.Blueprint("log_benchmark", __name__, url_prefix="/benchmark")
@@ -42,6 +45,8 @@ def log_benchmark():
             "log_timestamp": time.time(),
             "task_name": inputs.get("task_name"),
             "network_type": inputs.get("network_type"),
+            "wifi_strength": inputs.get("wifi_strength"),
+            "wifi_frequency": inputs.get("wifi_frequency"),
             "battery_level": round(inputs.get("battery_level"), 3),
             "is_charging": inputs.get("is_charging"),
             "latency_ms": round(inputs.get("latency_ms"), 3),
@@ -53,11 +58,11 @@ def log_benchmark():
             "device_model_name": inputs.get("device_model_name"),
             "os_name": inputs.get("os_name"),
             "os_version": inputs.get("os_version"),
-
             # We'll modify the task endpoint to send this
             "server_cpu_load": outputs.get("server_cpu_load"),
             "server_memory_percent": outputs.get("server_memory_percent"),
             "server_compute_time_ms": outputs.get("server_compute_time_ms"),
+            "server_core_count": outputs.get("server_core_count"),
         }
 
         # Check if file exists to see if we need to write the header
