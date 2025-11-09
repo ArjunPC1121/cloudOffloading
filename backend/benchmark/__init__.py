@@ -18,10 +18,10 @@ CSV_HEADER = [
     "remote_time_ms",
 ]
 
-benchmark_bp = flask.Blueprint("log_benchmark", __name__, url_prefix="/log-benchmark")
+benchmark_bp = flask.Blueprint("log_benchmark", __name__, url_prefix="/benchmark")
 
 
-@benchmark_bp.route("/", methods=["POST"])
+@benchmark_bp.route("/log", methods=["POST"])
 def log_benchmark():
     data = request.json
 
@@ -61,3 +61,65 @@ def log_benchmark():
     except Exception as e:
         print(f"Error logging benchmark: {e}")
         return jsonify(success=False, message="Error saving log."), 500
+
+
+@benchmark_bp.route("/show", methods=["GET"])
+def show_data():
+    """Reads the CSV file and displays it as an HTML table."""
+
+    # Check if the file exists
+    if not os.path.exists(DATA_FILE):
+        return "<h3>Benchmark data file not found.</h3>", 404
+
+    # Read all data from the CSV
+    data_rows = []
+    try:
+        with open(DATA_FILE, "r", newline="") as f:
+            reader = csv.DictReader(f)
+            data_rows = list(reader)
+    except Exception as e:
+        return f"<h1>Error reading CSV</h1><p>{e}</p>", 500
+
+    if not data_rows:
+        return "<h3>No data in the CSV file yet.</h3>", 200
+
+    # --- Build the HTML string ---
+
+    # 1. Start with a simple style for the table
+    html = """
+    <html>
+    <head>
+        <title>Benchmark Data</title>
+        <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; }
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; position: sticky; top: 0; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+        </style>
+    </head>
+    <body>
+        <h1>Benchmark Data</h1>
+        <table>
+    """
+
+    # 2. Create the table header
+    headers = data_rows[0].keys()
+    html += "<thead><tr>"
+    for header in headers:
+        html += f"<th>{header}</th>"
+    html += "</tr></thead>"
+
+    # 3. Create the table body with all the data
+    html += "<tbody>"
+    for row in data_rows:
+        html += "<tr>"
+        for header in headers:
+            html += f"<td>{row.get(header, '')}</td>"
+        html += "</tr>"
+    html += "</tbody>"
+
+    # 4. Close the tags
+    html += "</table></body></html>"
+
+    return html

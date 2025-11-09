@@ -2,123 +2,121 @@ import React, { useState } from 'react';
 import { View, Text, Button, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import * as Battery from 'expo-battery';
-import { framework } from '../framework/offloading-framework';
 import { TASKS } from '../framework/constants';
-import { API_BASE_URL } from "../config";
 import { localTaskExecutor } from '../framework/local-tasks';
 import { remoteTaskExecutor } from '../framework/remote-tasks';
+import { API_BASE_URL } from '../config';
 
-// --- This is the test task we will run ---
-const TEST_MATRIX_SIZE = 100; // Change this to test different sizes
+// --- 1. DEFINE YOUR TEST PLAN ---
+const BENCHMARK_SIZES = [10, 50, 100, 150, 200, 250, 300]; // Test these N x N sizes
+const ITERATIONS_PER_SIZE = 3; // Run each size 5 times
 
-// Helper function to generate a test matrix
+// (Your generateMatrix helper function)
 const generateMatrix = (size) => {
     return Array(size).fill(0).map(() => Array(size).fill(0).map(() => Math.random()));
 };
 
 export default function ProfilerScreen() {
-    const [log, setLog] = useState('Press button to start benchmark...');
+    const [log, setLog] = useState('Press button to start benchmark batch...');
     const [loading, setLoading] = useState(false);
 
-    // Helper function to measure latency
+    // (Your getLatency helper function is the same)
     const getLatency = async () => {
         const t0 = Date.now();
         try {
             await fetch(`${API_BASE_URL}/ping`);
             return Date.now() - t0;
         } catch (e) {
-            return -1; // Indicate a failed ping
+            return -1;
         }
     };
 
-    // The main benchmark function
-    const runBenchmark = async () => {
+    // --- 2. THIS IS THE NEW BATCH FUNCTION ---
+    const runBenchmarkBatch = async () => {
         setLoading(true);
-        setLog('Starting benchmark...\n');
+        setLog('Starting benchmark batch...\n');
 
-        try {
-            // 1. --- GATHER INPUTS ---
-            setLog(prev => prev + 'Gathering device context...\n');
-            const network = await NetInfo.fetch();
-            const battery = await Battery.getBatteryLevelAsync();
-            const isCharging = (await Battery.getBatteryStateAsync()) === Battery.BatteryState.CHARGING;
-            const latency = await getLatency();
+        const totalTests = BENCHMARK_SIZES.length * ITERATIONS_PER_SIZE;
+        let currentTest = 1;
 
-            const testMatrixA = generateMatrix(TEST_MATRIX_SIZE);
-            const testMatrixB = generateMatrix(TEST_MATRIX_SIZE);
-            const taskParams = { a: testMatrixA, b: testMatrixB };
+        // Loop over each size
+        for (const size of BENCHMARK_SIZES) {
+            // Loop N times for that size
+            for (let i = 0; i < ITERATIONS_PER_SIZE; i++) {
 
-            const inputs = {
-                task_name: TASKS.MATRIX_MULTIPLY,
-                network_type: network.type,
-                battery_level: battery,
-                is_charging: isCharging,
-                latency_ms: latency,
-                matrix_size: TEST_MATRIX_SIZE,
-                image_size_kb: 0,
-            };
-            setLog(prev => prev + `Context: ${network.type}, ${latency}ms, ${battery * 100}% bat\n`);
+                const logHeader = `\n[${currentTest}/${totalTests}] Running ${size}x${size} (Iter ${i + 1})...\n`;
+                setLog(prev => prev + logHeader);
 
-            // 2. --- RUN TASKS IN PARALLEL ---
-            setLog(prev => prev + 'Running local and remote tasks...\n');
+                // We wrap each test in a try/catch so one failure doesn't stop the whole batch
+                try {
+                    // 1. --- GATHER FRESH CONTEXT ---
+                    // We get fresh context for *every single test*
+                    const network = await NetInfo.fetch();
+                    const battery = await Battery.getBatteryLevelAsync();
+                    const isCharging = (await Battery.getBatteryStateAsync()) === Battery.BatteryState.CHARGING;
+                    const latency = await getLatency();
 
-            // We run both tasks to get both times
-            let t_local_ms = -1;
-            let t_remote_ms = -1;
+                    const testMatrixA = generateMatrix(size);
+                    const testMatrixB = generateMatrix(size);
+                    const taskParams = { a: testMatrixA, b: testMatrixB };
 
-            // Local
-            const t0 = Date.now();
-            try {
-                await localTaskExecutor[TASKS.MATRIX_MULTIPLY](taskParams);
-                t_local_ms = Date.now() - t0;
-            } catch (e) {
-                setLog(prev => prev + `Local task failed: ${e.message}\n`);
+                    const inputs = {
+                        task_name: TASKS.MATRIX_MULTIPLY,
+                        network_type: network.type,
+                        battery_level: battery,
+                        is_charging: isCharging,
+                        latency_ms: latency,
+                        matrix_size: size,
+                        image_size_kb: 0,
+                    };
+
+                    // 2. --- RUN TASKS ---
+                    let t_local_ms = -1;
+                    let t_remote_ms = -1;
+
+                    // Local
+                    const t0 = Date.now();
+                    await localTaskExecutor[TASKS.MATRIX_MULTIPLY](taskParams);
+                    t_local_ms = Date.now() - t0;
+
+                    // Remote
+                    const t1 = Date.now();
+                    await remoteTaskExecutor[TASKS.MATRIX_MULTIPLY](taskParams);
+                    t_remote_ms = Date.now() - t1;
+
+                    setLog(prev => prev + `-> Local: ${t_local_ms}ms, Remote: ${t_remote_ms}ms\n`);
+
+                    // 3. --- LOG THE DATA ---
+                    const outputs = {
+                        local_time_ms: t_local_ms,
+                        remote_time_ms: t_remote_ms,
+                    };
+
+                    await fetch(`${API_BASE_URL}/benchmark/log`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ inputs, outputs }),
+                    });
+                    setLog(prev => prev + '-> Logged to server.\n');
+
+                } catch (error) {
+                    setLog(prev => prev + `-> FAILED: ${error.message}\n`);
+                }
+
+                currentTest++;
             }
-            setLog(prev => prev + `-> Local Time: ${t_local_ms}ms\n`);
-
-            // Remote
-            const t1 = Date.now();
-            try {
-                await remoteTaskExecutor[TASKS.MATRIX_MULTIPLY](taskParams);
-                t_remote_ms = Date.now() - t1;
-            } catch (e) {
-                setLog(prev => prev + `Remote task failed: ${e.message}\n`);
-            }
-            setLog(prev => prev + `-> Remote Time: ${t_remote_ms}ms\n`);
-
-            // 3. --- LOG THE DATA ---
-            const outputs = {
-                local_time_ms: t_local_ms,
-                remote_time_ms: t_remote_ms,
-            };
-
-            if (t_local_ms === -1 || t_remote_ms === -1) {
-                throw new Error('One or more tasks failed. Log will not be sent.');
-            }
-
-            setLog(prev => prev + 'Sending log to server...\n');
-
-            await fetch(`${API_BASE_URL}/log-benchmark/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ inputs, outputs }),
-            });
-
-            setLog(prev => prev + '\n--- Benchmark Complete! ---');
-
-        } catch (error) {
-            setLog(prev => prev + `Benchmark FAILED: ${error.message}\n`);
-        } finally {
-            setLoading(false);
         }
+
+        setLog(prev => prev + '\n--- BATCH COMPLETE! ---');
+        setLoading(false);
     };
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Profiler</Text>
             <Button
-                title={loading ? 'Benchmarking...' : `Run ${TEST_MATRIX_SIZE}x${TEST_MATRIX_SIZE} Benchmark`}
-                onPress={runBenchmark}
+                title={loading ? 'Running Benchmark Batch...' : 'Run Full Batch'}
+                onPress={runBenchmarkBatch} // 👈 3. Call the new batch function
                 disabled={loading}
             />
             {loading && <ActivityIndicator size="large" color="#0000ff" />}
@@ -129,7 +127,7 @@ export default function ProfilerScreen() {
     );
 }
 
-// --- Add some basic styles ---
+// (Styles are the same)
 const styles = StyleSheet.create({
     container: {
         flex: 1,

@@ -64,3 +64,4 @@ logs/
 .env.*.local
 
 **/.venv
+backend/benchmark_data.csv
