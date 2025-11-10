@@ -9,7 +9,7 @@ import { LOG_URL, API_BASE_URL } from '../config';
 import * as Device from 'expo-device';
 
 // --- 1. DEFINE YOUR TEST PLAN ---
-const BENCHMARK_SIZES = [10, 25, 50, 100, 150, 200, 250, 300]; // Test these N x N sizes
+const BENCHMARK_SIZES = [14, 36, 52, 142, 169, 225, 291, 311]; // Test these N x N sizes
 const ITERATIONS_PER_SIZE = 3;
 
 // (Your generateMatrix helper function)

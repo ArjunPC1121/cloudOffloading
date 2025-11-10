@@ -72,72 +72,10 @@ export default function ImageManipulationScreen() {
         }
     };
 
-    const handleLocally = async () => {
-        if (!originalImage) {
-            setMessage('Please select an image first.');
-            return;
-        }
-
-        setLoading(true);
-        setMessage('');
-
-        try {
-            // 1. Call the framework
-            const response = await framework.execute(TASKS.FLIP_LOCAL, {
-                originalImage: originalImage,
-                networkState: networkState,
-                batteryPercentage: getBatteryPercentage(), 
-            });
-
-            // 2. Set results from the framework's response, the framework returns URI (data)
-            setProcessedImage(response.data.imageUri);
-            setMessage(
-                `Computed on ${response.ranOn} in ${response.timeMs} ms. Reason: ${response.reason}`
-            );
-        } catch (error) {
-            setMessage('Error processing image: ' + error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleRemotely = async () => {
-        if (!originalImage) {
-            setMessage('Please select an image first.');
-            return;
-        }
-
-        setLoading(true);
-        setMessage('');
-
-        try {
-            // 1. Call the framework
-            const response = await framework.execute(TASKS.FLIP_REMOTE, {
-                originalImage: originalImage,
-                networkState: networkState,
-                batteryPercentage: getBatteryPercentage(), 
-            });
-
-            // 2. Set results from the framework's response, the framework returns URI (data)
-            setProcessedImage(response.data.imageUri);
-            setMessage(
-                `Computed on ${response.ranOn} in ${response.timeMs} ms. Reason: ${response.reason}`
-            );
-        } catch (error) {
-            setMessage('Error processing image: ' + error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     return (
         <ScrollView style={styles.container}>
             <Text style={styles.title}>Image Manipulation</Text>
 
-            {/* Display current battery level */}
-            <Text style={styles.batteryInfo}>
-                Battery: **{getBatteryPercentage()}%** 🔋
-            </Text>
 
             <Button title="Pick an Image" onPress={pickImage} color="#1e90ff" />
             {originalImage && !processedImage && (
@@ -152,20 +90,6 @@ export default function ImageManipulationScreen() {
                 title="Process Image"
                 onPress={handleProcess}
                 color="#32cd32"
-                disabled={loading}
-            />
-
-            <Button
-                title="Process Image Locally"
-                onPress={handleLocally}
-                color="#e41173ff"
-                disabled={loading}
-            />
-
-            <Button
-                title="Process Image Remotely"
-                onPress={handleRemotely}
-                color="#e6770fff"
                 disabled={loading}
             />
 
@@ -205,10 +129,5 @@ const styles = StyleSheet.create({
         marginTop: 10,
         fontSize: 16,
     },
-    batteryInfo: {
-        color: 'yellow',
-        textAlign: 'center',
-        marginBottom: 10,
-        fontSize: 18,
-    },
+    
 });
