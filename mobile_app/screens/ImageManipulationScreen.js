@@ -36,28 +36,22 @@ export default function ImageManipulationScreen() {
         }
     };
 
-    // Helper to get the battery percentage (0 to 100)
-    const getBatteryPercentage = () => {
-        return batteryLevel !== null && batteryLevel !== -1
-            ? Math.round(batteryLevel * 100)
-            : 'Unknown';
-    };
-
     const handleProcess = async () => {
         if (!originalImage) {
             setMessage('Please select an image first.');
             return;
         }
 
-        setLoading(true);
-        setMessage('');
+        // ... (loading and message reset) ...
 
         try {
             // 1. Call the framework
+            // The framework's `shouldOffload` will now internally call 
+            // _getDeviceAndNetworkState and _measureLatency.
             const response = await framework.execute(TASKS.MANIPULATE, {
                 originalImage: originalImage,
-                networkState: networkState,
-                batteryPercentage: getBatteryPercentage(), 
+                networkState: networkState, // NetInfo state passed to framework
+                
             });
 
             // 2. Set results from the framework's response, the framework returns URI (data)
