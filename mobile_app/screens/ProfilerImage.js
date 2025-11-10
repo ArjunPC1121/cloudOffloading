@@ -13,7 +13,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import * as Device from 'expo-device';
 
 // --- Framework Imports ---
-import { API_BASE_URL } from '../config'; // Using your config file
+import { API_BASE_URL, LOG_URL } from '../config'; // Using your config file
 import { TASKS } from '../framework/constants';
 import { localTaskExecutor } from '../framework/local-tasks';
 import { remoteTaskExecutor } from '../framework/remote-tasks';
@@ -108,6 +108,7 @@ export default function ImageProfilerScreen() {
                     const latency = await getLatency();
                     const wifi_strength = network.type === 'wifi' ? network.details?.strength : null;
                     const wifi_frequency = network.type === 'wifi' ? network.details?.frequency : null;
+                    const network_type = network.details?.cellularGeneration || network.type;
 
                     // We'll benchmark a 90-degree rotation
                     const taskParams = {
@@ -116,7 +117,7 @@ export default function ImageProfilerScreen() {
 
                     const inputs = {
                         task_name: TASKS.MANIPULATE,
-                        network_type: network.type,
+                        network_type: network_type,
                         battery_level: battery,
                         is_charging: isCharging,
                         latency_ms: latency,
@@ -177,7 +178,7 @@ export default function ImageProfilerScreen() {
                     const log_data = { inputs: inputs, outputs: outputs };
 
                     // Use your benchmark/log endpoint
-                    await fetch(`${API_BASE_URL}/benchmark/log`, {
+                    await fetch(`${LOG_URL}/benchmark/log`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         // Add your API key if you've implemented it

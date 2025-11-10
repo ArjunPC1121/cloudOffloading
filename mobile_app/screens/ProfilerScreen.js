@@ -5,7 +5,7 @@ import * as Battery from 'expo-battery';
 import { TASKS } from '../framework/constants';
 import { localTaskExecutor } from '../framework/local-tasks';
 import { remoteTaskExecutor } from '../framework/remote-tasks';
-import { API_BASE_URL } from '../config';
+import { LOG_URL, API_BASE_URL } from '../config';
 import * as Device from 'expo-device';
 
 // --- 1. DEFINE YOUR TEST PLAN ---
@@ -56,7 +56,6 @@ export default function ProfilerScreen() {
                     const battery = await Battery.getBatteryLevelAsync();
                     const isCharging = (await Battery.getBatteryStateAsync()) === Battery.BatteryState.CHARGING;
                     const latency = await getLatency();
-
                     const wifi_strength = network.type === 'wifi' && network.details?.strength
                         ? network.details.strength
                         : null;
@@ -66,13 +65,15 @@ export default function ProfilerScreen() {
                         ? network.details.frequency
                         : null;
 
+                    const network_type = network.details?.cellularGeneration || network.type;
+
                     const testMatrixA = generateMatrix(size);
                     const testMatrixB = generateMatrix(size);
                     const taskParams = { a: testMatrixA, b: testMatrixB };
 
                     const inputs = {
                         task_name: TASKS.MATRIX_MULTIPLY,
-                        network_type: network.type,
+                        network_type: network_type,
                         battery_level: battery,
                         is_charging: isCharging,
                         latency_ms: latency,
@@ -124,7 +125,7 @@ export default function ProfilerScreen() {
                         ...server_stats
                     };
 
-                    await fetch(`${API_BASE_URL}/benchmark/log`, {
+                    await fetch(`${LOG_URL}/benchmark/log`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ inputs, outputs }),

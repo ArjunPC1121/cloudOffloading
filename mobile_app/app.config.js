@@ -10,6 +10,10 @@ if (!process.env.API_BASE_URL) {
     throw new Error('❌ Missing API_BASE_URL in your .env or .env.local file');
 }
 
+if (!process.env.LOG_URL) {
+    throw new Error('❌ Missing LOG_URL in your .env or .env.local file');
+}
+
 export default ({ config }) => {
     const isProd = process.env.APP_ENV === 'production';
 
@@ -17,6 +21,7 @@ export default ({ config }) => {
         ...config,
         extra: {
             apiBaseUrl: process.env.API_BASE_URL,
+            logUrl: process.env.LOG_URL,
         },
     };
 };

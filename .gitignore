@@ -65,3 +65,4 @@ logs/
 
 **/.venv
 backend/benchmark_data.csv
+backend/data
