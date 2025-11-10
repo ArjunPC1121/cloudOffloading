@@ -4,7 +4,10 @@ import os
 import csv
 import time
 
-DATA_FILE = "benchmark_data.csv"
+import pathlib
+pathlib.Path("data").mkdir(parents=True, exist_ok=True)
+
+DATA_FILE = "data/benchmark_data.csv"
 CSV_HEADER = [
     "log_timestamp",
     "task_name",
