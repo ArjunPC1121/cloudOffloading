@@ -214,9 +214,17 @@ def get_csv():
 
         csv_content = "\n".join(csv_lines)
 
+        response_headers = {
+            # This forces the browser to "Save As..."
+            "Content-Disposition": "attachment; filename=benchmark_data.csv",
+            # These 3 lines tell the browser to NEVER cache this file
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        }
+
         response = flask.Response(
-            csv_content,
-            mimetype="text/plain",
+            csv_content, mimetype="text/csv", headers=response_headers
         )
         return response
 
