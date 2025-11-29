@@ -10,7 +10,7 @@ import { API_BASE_URL } from "../config";
 // --- CONFIGURATION ---
 // --------------------------------------------------------
 // IMPORTANT: Replace 'YOUR_SERVER_IP' with the actual IP address or domain name of your backend server.
-const BACKEND_URL = 'http://172.20.10.8:5000';
+const BACKEND_URL = API_BASE_URL;
 const PING_ENDPOINT = `${BACKEND_URL}/ping`;
 const PREDICTION_ENDPOINT = `${BACKEND_URL}/predict_offload`;
 
